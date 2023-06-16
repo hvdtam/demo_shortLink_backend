@@ -14,6 +14,12 @@ func init() {
 			beego.NSRouter("/login", &controllers.AuthController{}, "post:Login"),
 			beego.NSRouter("/register", &controllers.AuthController{}, "post:Register"),
 		),
+		beego.NSNamespace("/shortlink",
+			beego.NSInclude(&controllers.ShortlinkController{}),
+			beego.NSRouter("/", &controllers.ShortlinkController{}, "get:GetAll"),
+			beego.NSRouter("/:id", &controllers.ShortlinkController{}, "put:Put"),
+			beego.NSRouter("/", &controllers.ShortlinkController{}, "post:Post"),
+		),
 	)
 	beego.ErrorHandler("404", NotFoundHandler)
 	beego.ErrorHandler("403", ForbiddenHandler)

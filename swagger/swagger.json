@@ -1,89 +1,316 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "contact": {},
-    "version": "",
-    "title": ""
-  },
-  "paths": null,
-  "definitions": {
-    "models.Shortlink": {
-      "title": "Shortlink",
-      "type": "object",
-      "properties": {
-        "AliasUrl": {
-          "type": "string"
-        },
-        "CreatedAt": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "CreatedBy": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "Expire": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "Id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "LongUrl": {
-          "type": "string"
-        },
-        "Password": {
-          "type": "string"
-        },
-        "TotalClick": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "UpdatedAt": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "UpdatedBy": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
     },
-    "models.Users": {
-      "title": "Users",
-      "type": "object",
-      "properties": {
-        "CreatedAt": {
-          "type": "integer",
-          "format": "int64"
+    "basePath": "/v1",
+    "paths": {
+        "/shortlink/": {
+            "get": {
+                "tags": [
+                    "shortlink"
+                ],
+                "description": "get Shortlink\n\u003cbr\u003e",
+                "operationId": "ShortlinkController.Get All",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "query",
+                        "description": "Filter. e.g. col1:v1,col2:v2 ...",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "fields",
+                        "description": "Fields returned. e.g. col1,col2 ...",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "sortby",
+                        "description": "Sorted-by fields. e.g. col1,col2 ...",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "order",
+                        "description": "Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ...",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "description": "Limit the size of result set. Must be an integer",
+                        "type": "string"
+                    },
+                    {
+                        "in": "query",
+                        "name": "offset",
+                        "description": "Start position of result set. Must be an integer",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Shortlink"
+                        }
+                    },
+                    "403": {
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "shortlink"
+                ],
+                "description": "create Shortlink\n\u003cbr\u003e",
+                "operationId": "ShortlinkController.Post",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "body for Shortlink content",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Shortlink"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "{int} models.Shortlink"
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
         },
-        "Email": {
-          "type": "string"
+        "/shortlink/{id}": {
+            "get": {
+                "tags": [
+                    "shortlink"
+                ],
+                "description": "get Shortlink by id\n\u003cbr\u003e",
+                "operationId": "ShortlinkController.Get One",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "description": "The key for staticblock",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Shortlink"
+                        }
+                    },
+                    "403": {
+                        "description": ":id is empty"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "shortlink"
+                ],
+                "description": "update the Shortlink\n\u003cbr\u003e",
+                "operationId": "ShortlinkController.Put",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "description": "The id you want to update",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "body for Shortlink content",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Shortlink"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/models.Shortlink"
+                        }
+                    },
+                    "403": {
+                        "description": ":id is not int"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "shortlink"
+                ],
+                "description": "delete the Shortlink\n\u003cbr\u003e",
+                "operationId": "ShortlinkController.Delete",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "description": "The id you want to delete",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{string} delete success!"
+                    },
+                    "403": {
+                        "description": "id is empty"
+                    }
+                }
+            }
         },
-        "Id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "LastOnline": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "PasswordHash": {
-          "type": "string"
-        },
-        "Status": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "UpdatedAt": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "Username": {
-          "type": "string"
+        "/user/": {
+            "post": {
+                "tags": [
+                    "user"
+                ],
+                "description": "login User\n\u003cbr\u003e",
+                "operationId": "AuthController.Login",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "body for User content",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.LoginForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "{int} models.User"
+                    },
+                    "403": {
+                        "description": "body is empty"
+                    }
+                }
+            }
         }
-      }
-    }
-  }
+    },
+    "definitions": {
+        "models.LoginForm": {
+            "title": "LoginForm",
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Shortlink": {
+            "title": "Shortlink",
+            "type": "object",
+            "properties": {
+                "AliasUrl": {
+                    "type": "string"
+                },
+                "CreatedAt": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "CreatedBy": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Expire": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "LongUrl": {
+                    "type": "string"
+                },
+                "Password": {
+                    "type": "string"
+                },
+                "TotalClick": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "UpdatedAt": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "UpdatedBy": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "models.User": {
+            "title": "User",
+            "type": "object"
+        },
+        "models.Users": {
+            "title": "Users",
+            "type": "object",
+            "properties": {
+                "CreatedAt": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Email": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "LastOnline": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "PasswordHash": {
+                    "type": "string"
+                },
+                "Status": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "UpdatedAt": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Username": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "user",
+            "description": "AuthController operations for User\n"
+        },
+        {
+            "name": "shortlink",
+            "description": "ShortlinkController operations for Shortlink\n"
+        }
+    ]
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
+
 	"net/http"
 	"shortlink/helper"
 	"shortlink/models"
@@ -31,10 +32,10 @@ func (c *AuthController) Register() {
 	var v models.Users
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddUser(&v); err == nil {
-			access_token, _ := helper.GenerateToken(v.Username, v.PasswordHash)
+			accessToken, _ := helper.GenerateToken(v.Username, v.Password)
 			userSession := map[string]int{"id": v.Id}
 			c.SetSession("current_user", userSession)
-			c.Data["json"] = helper.AccessToken(http.StatusCreated, access_token)
+			c.Data["json"] = helper.AccessToken(http.StatusCreated, accessToken)
 		} else {
 			c.Ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
 			c.Data["json"] = helper.JsonResponse(http.StatusBadRequest, err.Error())
@@ -56,8 +57,8 @@ func (c *AuthController) Login() {
 	var v models.LoginForm
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if err := models.Login(&v); err == nil {
-			access_token, _ := helper.GenerateToken(v.Username, v.Password)
-			c.Data["json"] = helper.AccessToken(200, access_token)
+			accessToken, _ := helper.GenerateToken(v.Username, v.Password)
+			c.Data["json"] = helper.AccessToken(200, accessToken)
 			o := orm.NewOrm()
 			user := &models.Users{Username: v.Username}
 			_ = o.Read(user, "username")
