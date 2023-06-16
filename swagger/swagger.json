@@ -1,0 +1,89 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "contact": {},
+    "version": "",
+    "title": ""
+  },
+  "paths": null,
+  "definitions": {
+    "models.Shortlink": {
+      "title": "Shortlink",
+      "type": "object",
+      "properties": {
+        "AliasUrl": {
+          "type": "string"
+        },
+        "CreatedAt": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "CreatedBy": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "Expire": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "Id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "LongUrl": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        },
+        "TotalClick": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "UpdatedAt": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "UpdatedBy": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "models.Users": {
+      "title": "Users",
+      "type": "object",
+      "properties": {
+        "CreatedAt": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "LastOnline": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "PasswordHash": {
+          "type": "string"
+        },
+        "Status": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "UpdatedAt": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "Username": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

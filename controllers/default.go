@@ -2,6 +2,8 @@ package controllers
 
 import (
 	beego "github.com/beego/beego/v2/server/web"
+	"net/http"
+	"shortlink/helper"
 )
 
 type MainController struct {
@@ -9,7 +11,6 @@ type MainController struct {
 }
 
 func (c *MainController) Get() {
-	c.Data["Website"] = "beego.vip"
-	c.Data["Email"] = "astaxie@gmail.com"
-	c.TplName = "index.tpl"
+	c.Data["json"] = helper.JsonResponse(http.StatusOK, "OK")
+	c.ServeJSON()
 }
