@@ -20,7 +20,7 @@ func init() {
 // Run the migrations
 func (m *Users_20230615_202514) Up() {
 	// use m.SQL("CREATE TABLE ...") to make schema update
-	m.SQL("CREATE TABLE users(id_user serial primary key,username TEXT NOT NULL,password_hash TEXT NOT NULL,email TEXT NOT NULL,status integer DEFAULT NULL,last_online integer DEFAULT NULL,created_at integer DEFAULT NULL,updated_at integer DEFAULT NULL)")
+	m.SQL("CREATE TABLE users(id_user serial primary key,username TEXT UNIQUE NOT NULL,password_hash TEXT NOT NULL,email TEXT NOT NULL,status integer DEFAULT NULL,last_online integer DEFAULT NULL,created_at integer DEFAULT NULL,updated_at integer DEFAULT NULL)")
 }
 
 // Reverse the migrations

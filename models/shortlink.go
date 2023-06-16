@@ -3,23 +3,27 @@ package models
 import (
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"reflect"
+	"shortlink/helper"
 	"strings"
+	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 )
 
 type Shortlink struct {
-	Id         int    `orm:"column(id_shortlink);pk"`
-	LongUrl    string `orm:"column(long_url)"`
-	AliasUrl   string `orm:"column(alias_url)"`
-	Password   string `orm:"column(password)"`
-	Expire     int    `orm:"column(expire);null"`
-	TotalClick int    `orm:"column(total_click);null"`
-	CreatedAt  int    `orm:"column(created_at);null"`
-	CreatedBy  int    `orm:"column(created_by);null"`
-	UpdatedAt  int    `orm:"column(updated_at);null"`
-	UpdatedBy  int    `orm:"column(updated_by);null"`
+	Id         int    `orm:"column(id_shortlink);pk;auto" json:"id"`
+	LongUrl    string `orm:"column(long_url)" json:"longUrl"`
+	AliasUrl   string `orm:"column(alias_url);unique" json:"aliasUrl"`
+	Password   string `orm:"column(password)" json:"password"`
+	Status     int    `orm:"column(status)" json:"status"`
+	Expire     int    `orm:"column(expire);null" json:"expire"`
+	TotalClick int    `orm:"column(total_click);null" json:"totalClick"`
+	CreatedAt  int    `orm:"column(created_at);null" json:"createdAt"`
+	CreatedBy  int    `orm:"column(created_by);null" json:"createdBy"`
+	UpdatedAt  int    `orm:"column(updated_at);null" json:"updatedAt"`
+	UpdatedBy  int    `orm:"column(updated_by);null" json:"-"`
 }
 
 func (t *Shortlink) TableName() string {
@@ -34,6 +38,18 @@ func init() {
 // last inserted Id on success.
 func AddShortlink(m *Shortlink) (id int64, err error) {
 	o := orm.NewOrm()
+	if m.AliasUrl == "" {
+		m.AliasUrl = helper.GenerateRandom(10)
+	}
+	m.CreatedAt = int(time.Now().Unix())
+	if m.Expire != 0 {
+		m.Expire = m.CreatedAt + m.Expire
+	}
+	if m.Password != "" {
+		passwordHash, _ := bcrypt.GenerateFromPassword([]byte(m.Password), bcrypt.DefaultCost)
+		m.Password = string(passwordHash)
+	}
+	m.Status = 10
 	id, err = o.Insert(m)
 	return
 }
@@ -132,6 +148,9 @@ func GetAllShortlink(query map[string]string, fields []string, sortby []string, 
 func UpdateShortlinkById(m *Shortlink) (err error) {
 	o := orm.NewOrm()
 	v := Shortlink{Id: m.Id}
+	if m.AliasUrl == "" {
+		m.AliasUrl = helper.GenerateRandom(10)
+	}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64

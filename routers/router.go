@@ -17,7 +17,7 @@ func init() {
 		beego.NSNamespace("/shortlink",
 			beego.NSInclude(&controllers.ShortlinkController{}),
 			beego.NSRouter("/", &controllers.ShortlinkController{}, "get:GetAll"),
-			beego.NSRouter("/:id", &controllers.ShortlinkController{}, "put:Put"),
+			beego.NSRouter("/?:id", &controllers.ShortlinkController{}, "put:Put"),
 			beego.NSRouter("/", &controllers.ShortlinkController{}, "post:Post"),
 		),
 	)

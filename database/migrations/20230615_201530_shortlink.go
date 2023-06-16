@@ -20,7 +20,7 @@ func init() {
 // Run the migrations
 func (m *Shortlink_20230615_201530) Up() {
 	// use m.SQL("CREATE TABLE ...") to make schema update
-	m.SQL("CREATE TABLE shortlink(id_shortlink serial primary key,long_url TEXT NOT NULL,alias_url TEXT NOT NULL,password TEXT NOT NULL,expire integer DEFAULT NULL,total_click integer DEFAULT NULL,created_at integer DEFAULT NULL,created_by integer DEFAULT NULL,updated_at integer DEFAULT NULL,updated_by integer DEFAULT NULL)")
+	m.SQL("CREATE TABLE shortlink(id_shortlink serial primary key,long_url TEXT NOT NULL,alias_url TEXT UNIQUE NOT NULL,password TEXT NOT NULL,expire integer DEFAULT NULL, status integer DEFAULT NULL,total_click integer DEFAULT NULL,created_at integer DEFAULT NULL,created_by integer DEFAULT NULL,updated_at integer DEFAULT NULL,updated_by integer DEFAULT NULL)")
 }
 
 // Reverse the migrations
