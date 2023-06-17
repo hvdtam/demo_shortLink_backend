@@ -14,7 +14,7 @@ import (
 type Users struct {
 	Id         int    `orm:"column(id_user);pk;auto"`
 	Username   string `orm:"column(username);unique" json:"username"`
-	Password   string `orm:"column(password_hash)" json:"-"`
+	Password   string `orm:"column(password_hash)" json:"password"`
 	Email      string `orm:"column(email)" json:"email"`
 	Status     int    `orm:"column(status);null" json:"status"`
 	LastOnline int    `orm:"column(last_online);null" json:"last_online"`
@@ -51,11 +51,26 @@ func init() {
 		beego.AppConfig.DefaultString("dbsslmode", "disable")))
 }
 
+// GetUserById retrieves User by Id. Returns error if
+// Id doesn't exist
+func GetUserById(id int) (v *Users, err error) {
+	o := orm.NewOrm()
+	v = &Users{Id: id}
+	if err = o.Read(v); err == nil {
+		return v, nil
+	}
+	return nil, err
+}
+
 // AddUser insert a new User into database and returns
 // last inserted Id on success.
+
 func AddUser(m *Users) (id int64, err error) {
 	o := orm.NewOrm()
-	passwordHash, _ := bcrypt.GenerateFromPassword([]byte(m.Password), bcrypt.DefaultCost)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(m.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return 0, err
+	}
 	m.Password = string(passwordHash)
 	m.Status = 10
 	id, err = o.Insert(m)
@@ -74,9 +89,10 @@ func Login(m *LoginForm) (err error) {
 	user := &Users{Username: m.Username}
 	err = o.Read(user, "username")
 	if err == orm.ErrNoRows {
-		return errors.New("username or password is incorrect")
-	} else if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(m.Password)) == nil {
-		return nil
+		return errors.New("username not found")
 	}
-	return errors.New("username not found")
+	if errz := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(m.Password)); errz != nil {
+		return errors.New("username or password is incorrect")
+	}
+	return nil
 }

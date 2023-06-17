@@ -19,6 +19,22 @@ type AuthController struct {
 func (c *AuthController) URLMapping() {
 	c.Mapping("Post", c.Register)
 	c.Mapping("Post", c.Login)
+	c.Mapping("GetOne", c.GetOne)
+}
+
+func (c *AuthController) GetOne() {
+	userSession := c.GetSession("current_user")
+	if userSession != nil {
+		v, err := models.GetUserById(userSession.(map[string]int)["id"])
+		if err != nil {
+			c.Data["json"] = err.Error()
+		} else {
+			c.Data["json"] = helper.JsonResponse(http.StatusOK, v.Username)
+		}
+	} else {
+		c.Data["json"] = helper.JsonResponse(http.StatusUnauthorized, "Unauthorized")
+	}
+	c.ServeJSON()
 }
 
 // Register ...
