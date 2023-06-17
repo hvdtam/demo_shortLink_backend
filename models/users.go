@@ -7,6 +7,7 @@ import (
 	beego "github.com/beego/beego/v2/server/web"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -53,13 +54,18 @@ func init() {
 
 // GetUserById retrieves User by Id. Returns error if
 // Id doesn't exist
-func GetUserById(id int) (v *Users, err error) {
+func GetUserById(id int) (map[string]interface{}, error) {
 	o := orm.NewOrm()
-	v = &Users{Id: id}
-	if err = o.Read(v); err == nil {
-		return v, nil
+	v := &Users{Id: id}
+	if err := o.Read(v); err != nil {
+		return nil, err
 	}
-	return nil, err
+	return map[string]interface{}{
+		"username":   v.Username,
+		"email":      v.Email,
+		"createdAt":  v.CreatedAt,
+		"lastOnline": v.LastOnline,
+	}, nil
 }
 
 // AddUser insert a new User into database and returns
@@ -72,6 +78,8 @@ func AddUser(m *Users) (id int64, err error) {
 		return 0, err
 	}
 	m.Password = string(passwordHash)
+	m.LastOnline = int(time.Now().Unix())
+	m.CreatedAt = int(time.Now().Unix())
 	m.Status = 10
 	id, err = o.Insert(m)
 	if err != nil {

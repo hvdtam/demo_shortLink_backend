@@ -29,7 +29,10 @@ func (c *AuthController) GetOne() {
 		if err != nil {
 			c.Data["json"] = err.Error()
 		} else {
-			c.Data["json"] = helper.JsonResponse(http.StatusOK, v.Username)
+			resp := make(map[string]interface{})
+			resp["status"] = http.StatusOK
+			resp["user"] = v
+			c.Data["json"] = resp
 		}
 	} else {
 		c.Data["json"] = helper.JsonResponse(http.StatusUnauthorized, "Unauthorized")
