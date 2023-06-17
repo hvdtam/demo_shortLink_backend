@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 
@@ -32,6 +33,7 @@ func (c *AuthController) GetOne() {
 			resp := make(map[string]interface{})
 			resp["status"] = http.StatusOK
 			resp["user"] = v
+			resp["code"] = http.StatusOK
 			c.Data["json"] = resp
 		}
 	} else {
@@ -52,8 +54,12 @@ func (c *AuthController) Register() {
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddUser(&v); err == nil {
 			accessToken, _ := helper.GenerateToken(v.Username, v.Password)
+			globalAccessToken = accessToken
 			userSession := map[string]int{"id": v.Id}
-			c.SetSession("current_user", userSession)
+			err := c.SetSession("current_user", userSession)
+			if err != nil {
+				fmt.Println(err)
+			}
 			c.Data["json"] = helper.AccessToken(http.StatusCreated, accessToken)
 		} else {
 			c.Ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
@@ -81,9 +87,12 @@ func (c *AuthController) Login() {
 			o := orm.NewOrm()
 			user := &models.Users{Username: v.Username}
 			_ = o.Read(user, "username")
-
+			globalAccessToken = accessToken
 			userSession := map[string]int{"id": user.Id}
-			c.SetSession("current_user", userSession)
+			err := c.SetSession("current_user", userSession)
+			if err != nil {
+				fmt.Print(err)
+			}
 		} else {
 			c.Ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 			c.Data["json"] = helper.JsonResponse(http.StatusUnauthorized, err.Error())

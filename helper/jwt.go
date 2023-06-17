@@ -1,6 +1,8 @@
 package helper
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -17,10 +19,10 @@ type Claims struct {
 // GenerateToken generate tokens used for auth
 func GenerateToken(username, password string) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(3 * time.Hour)
+	expireTime := nowTime.Add(24 * time.Hour)
 
 	claims := Claims{
-		EncodeMD5(username),
+		username,
 		EncodeMD5(password),
 		jwt.StandardClaims{
 			ExpiresAt: expireTime.Unix(),
@@ -40,11 +42,16 @@ func ParseToken(token string) (*Claims, error) {
 		return jwtSecret, nil
 	})
 
+	if err != nil {
+		errMsg := fmt.Sprintf("Error parsing token: %s", err.Error())
+		return nil, errors.New(errMsg)
+	}
+
 	if tokenClaims != nil {
 		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
 			return claims, nil
 		}
 	}
 
-	return nil, err
+	return nil, errors.New("Invalid token claims")
 }

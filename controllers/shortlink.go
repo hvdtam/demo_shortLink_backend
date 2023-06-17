@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
-	beego "github.com/beego/beego/v2/server/web"
 	_ "github.com/lib/pq"
 	"shortlink/models"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 
 // ShortlinkController operations for Shortlink
 type ShortlinkController struct {
-	beego.Controller
+	BaseController
 }
 
 // URLMapping ...
@@ -119,7 +118,8 @@ func (c *ShortlinkController) GetAll() {
 		}
 	}
 
-	l, err := models.GetAllShortlink(query, fields, sortby, order, offset, limit)
+	l, err := models.GetAllShortlink(map[string]string{"created_by": strconv.Itoa(parseUserId), "status": "10"},
+		fields, sortby, order, offset, limit)
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
