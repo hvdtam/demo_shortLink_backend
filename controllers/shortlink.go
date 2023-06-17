@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	_ "github.com/lib/pq"
+	"net/http"
+	"shortlink/helper"
 	"shortlink/models"
 	"strconv"
 	"strings"
@@ -121,9 +123,13 @@ func (c *ShortlinkController) GetAll() {
 	l, err := models.GetAllShortlink(map[string]string{"created_by": strconv.Itoa(parseUserId), "status": "10"},
 		fields, sortby, order, offset, limit)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		c.Data["json"] = helper.JsonResponse(http.StatusNoContent, "No Content")
 	} else {
-		c.Data["json"] = l
+		if len(l) > 0 {
+			c.Data["json"] = l
+		} else {
+			c.Data["json"] = helper.JsonResponse(http.StatusNoContent, "No Content")
+		}
 	}
 	c.ServeJSON()
 }
