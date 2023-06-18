@@ -41,8 +41,9 @@ func init() {
 func AddShortlink(m *Shortlink) (id int64, err error) {
 	o := orm.NewOrm()
 	if m.AliasUrl == "" {
-		m.AliasUrl = helper.GenerateRandom(10)
-		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/") + helper.GenerateRandom(10)
+		var aliasUrl = helper.GenerateRandom(10)
+		m.AliasUrl = aliasUrl
+		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/") + aliasUrl
 	}
 	m.CreatedAt = int(time.Now().Unix())
 	if m.Expire != 0 {
@@ -164,8 +165,9 @@ func UpdateShortlinkById(m *Shortlink) (err error) {
 	o := orm.NewOrm()
 	v := Shortlink{Id: m.Id}
 	if m.AliasUrl == "" {
-		m.AliasUrl = helper.GenerateRandom(10)
-		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/shortlink/") + helper.GenerateRandom(10)
+		var aliasUrl = helper.GenerateRandom(10)
+		m.AliasUrl = aliasUrl
+		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/shortlink/") + aliasUrl
 	}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
