@@ -3,12 +3,14 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/lib/pq"
 	"net/http"
 	"shortlink/helper"
 	"shortlink/models"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // ShortlinkController operations for Shortlink
@@ -58,13 +60,46 @@ func (c *ShortlinkController) Post() {
 // @Failure 403 :id is empty
 // @router /:id [get]
 func (c *ShortlinkController) GetOne() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.Atoi(idStr)
-	v, err := models.GetShortlinkById(id)
+	slug := c.Ctx.Input.Param(":id")
+	v, err := models.GetShortlinkByAlias(slug)
 	if err != nil {
-		c.Data["json"] = err.Error()
+		c.Ctx.Output.SetStatus(http.StatusNotFound)
+		c.Data["json"] = helper.JsonResponse(http.StatusNotFound, "Shortlink not found")
 	} else {
-		c.Data["json"] = v
+		if v.Status == 0 {
+			c.Ctx.Output.SetStatus(http.StatusNotFound)
+			c.Data["json"] = helper.JsonResponse(http.StatusNotFound, "Shortlink is disabled")
+		}
+		if v.Expire > int(time.Now().Unix()) {
+			c.Ctx.Output.SetStatus(http.StatusGone)
+			c.Data["json"] = helper.JsonResponse(http.StatusGone, "Shortlink expired")
+		} else {
+			o := orm.NewOrm()
+			v.TotalClick = v.TotalClick + 1
+			if _, err = o.Update(v, "total_click"); err != nil {
+
+			}
+			v.TotalClick = v.TotalClick + 1
+			if v.Password != "" {
+				c.Ctx.Output.SetStatus(http.StatusUnauthorized)
+				c.Data["json"] = map[string]interface{}{
+					"id":       v.Id,
+					"longUrl":  v.LongUrl,
+					"password": v.Password,
+					"aliasUrl": v.AliasUrl,
+					"status":   v.Status,
+				}
+			} else {
+				c.Ctx.Output.SetStatus(http.StatusOK)
+				c.Data["json"] = map[string]interface{}{
+					"id":       v.Id,
+					"longUrl":  v.LongUrl,
+					"aliasUrl": v.AliasUrl,
+					"status":   v.Status,
+				}
+			}
+
+		}
 	}
 	c.ServeJSON()
 }

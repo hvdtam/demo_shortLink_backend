@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	beego "github.com/beego/beego/v2/server/web"
 	"golang.org/x/crypto/bcrypt"
 	"reflect"
 	"shortlink/helper"
@@ -13,17 +14,18 @@ import (
 )
 
 type Shortlink struct {
-	Id         int    `orm:"column(id_shortlink);pk;auto" json:"id"`
-	LongUrl    string `orm:"column(long_url)" json:"longUrl"`
-	AliasUrl   string `orm:"column(alias_url);unique" json:"aliasUrl"`
-	Password   string `orm:"column(password)" json:"password"`
-	Status     int    `orm:"column(status)" json:"status"`
-	Expire     int    `orm:"column(expire);null" json:"expire"`
-	TotalClick int    `orm:"column(total_click);null" json:"totalClick"`
-	CreatedAt  int    `orm:"column(created_at);null" json:"createdAt"`
-	CreatedBy  int    `orm:"column(created_by);null" json:"createdBy"`
-	UpdatedAt  int    `orm:"column(updated_at);null" json:"updatedAt"`
-	UpdatedBy  int    `orm:"column(updated_by);null" json:"-"`
+	Id           int    `orm:"column(id_shortlink);pk;auto" json:"id"`
+	LongUrl      string `orm:"column(long_url)" json:"longUrl"`
+	AliasUrl     string `orm:"column(alias_url);unique" json:"aliasUrl"`
+	FullAliasUrl string `orm:"column(full_alias_url);unique" json:"fullAliasUrl"`
+	Password     string `orm:"column(password)" json:"password"`
+	Status       int    `orm:"column(status)" json:"status"`
+	Expire       int    `orm:"column(expire);null" json:"expire"`
+	TotalClick   int    `orm:"column(total_click);null" json:"totalClick"`
+	CreatedAt    int    `orm:"column(created_at);null" json:"createdAt"`
+	CreatedBy    int    `orm:"column(created_by);null" json:"createdBy"`
+	UpdatedAt    int    `orm:"column(updated_at);null" json:"updatedAt"`
+	UpdatedBy    int    `orm:"column(updated_by);null" json:"-"`
 }
 
 func (t *Shortlink) TableName() string {
@@ -40,6 +42,7 @@ func AddShortlink(m *Shortlink) (id int64, err error) {
 	o := orm.NewOrm()
 	if m.AliasUrl == "" {
 		m.AliasUrl = helper.GenerateRandom(10)
+		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/") + helper.GenerateRandom(10)
 	}
 	m.CreatedAt = int(time.Now().Unix())
 	if m.Expire != 0 {
@@ -60,6 +63,17 @@ func GetShortlinkById(id int) (v *Shortlink, err error) {
 	o := orm.NewOrm()
 	v = &Shortlink{Id: id}
 	if err = o.Read(v); err == nil {
+		return v, nil
+	}
+	return nil, err
+}
+
+// GetShortlinkById retrieves Shortlink by Id. Returns error if
+// Id doesn't exist
+func GetShortlinkByAlias(alias string) (v *Shortlink, err error) {
+	o := orm.NewOrm()
+	v = &Shortlink{AliasUrl: alias}
+	if err = o.Read(v, "alias_url"); err == nil {
 		return v, nil
 	}
 	return nil, err
@@ -151,6 +165,7 @@ func UpdateShortlinkById(m *Shortlink) (err error) {
 	v := Shortlink{Id: m.Id}
 	if m.AliasUrl == "" {
 		m.AliasUrl = helper.GenerateRandom(10)
+		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/shortlink/") + helper.GenerateRandom(10)
 	}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
