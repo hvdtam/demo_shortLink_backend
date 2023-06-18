@@ -125,7 +125,7 @@ func (c *ShortlinkController) GetAll() {
 	var createdBy string
 	if parseUserId != 0 {
 		createdBy = strconv.Itoa(parseUserId)
-		query["created_by__is"] = createdBy
+		query["created_by__exact"] = createdBy
 		query["status__exact"] = "10"
 	} else {
 		query["created_by__isnull"] = "true"

@@ -42,9 +42,9 @@ func (c *ShortlinkController) Prepare() {
 		v := &models.Users{Username: user.Username}
 		o := orm.NewOrm()
 		if err := o.Read(v, "username"); err != nil {
-			parseUserId = v.Id
-			return
+
 		}
+		parseUserId = v.Id
 		if err != nil {
 			switch err.(*jwt.ValidationError).Errors {
 			case jwt.ValidationErrorExpired:
@@ -62,7 +62,4 @@ func (c *ShortlinkController) Prepare() {
 		c.Data["json"] = helper.JsonResponse(code, message)
 		c.ServeJSON()
 	}
-	c.Ctx.Output.SetStatus(code)
-	c.Data["json"] = helper.JsonResponse(code, message)
-	c.ServeJSON()
 }
