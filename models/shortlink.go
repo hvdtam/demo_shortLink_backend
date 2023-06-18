@@ -68,6 +68,7 @@ func GetShortlinkById(id int) (v *Shortlink, err error) {
 // GetAllShortlink retrieves all Shortlink matches certain condition. Returns empty list if
 // no records exist
 func GetAllShortlink(query map[string]string, fields []string, sortby []string, order []string,
+
 	offset int64, limit int64) (ml []interface{}, err error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(new(Shortlink))

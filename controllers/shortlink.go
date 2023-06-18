@@ -34,6 +34,9 @@ func (c *ShortlinkController) URLMapping() {
 // @router / [post]
 func (c *ShortlinkController) Post() {
 	var v models.Shortlink
+	if parseUserId != 0 {
+		v.CreatedBy = parseUserId
+	}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
 		if _, err := models.AddShortlink(&v); err == nil {
 			c.Ctx.Output.SetStatus(201)
@@ -119,15 +122,31 @@ func (c *ShortlinkController) GetAll() {
 			query[k] = v
 		}
 	}
-
-	l, err := models.GetAllShortlink(map[string]string{"created_by": strconv.Itoa(parseUserId), "status": "10"},
-		fields, sortby, order, offset, limit)
+	var createdBy string
+	if parseUserId != 0 {
+		createdBy = strconv.Itoa(parseUserId)
+		query["created_by__is"] = createdBy
+		query["status__exact"] = "10"
+	} else {
+		query["created_by__isnull"] = "true"
+		query["status__exact"] = "10"
+	}
+	l, err := models.GetAllShortlink(
+		query,
+		fields,
+		sortby,
+		order,
+		offset,
+		limit)
 	if err != nil {
+		c.Ctx.Output.SetStatus(http.StatusNoContent)
 		c.Data["json"] = helper.JsonResponse(http.StatusNoContent, "No Content")
 	} else {
 		if len(l) > 0 {
+			c.Ctx.Output.SetStatus(http.StatusOK)
 			c.Data["json"] = l
 		} else {
+			c.Ctx.Output.SetStatus(http.StatusNoContent)
 			c.Data["json"] = helper.JsonResponse(http.StatusNoContent, "No Content")
 		}
 	}

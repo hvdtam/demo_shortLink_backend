@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 	"github.com/golang-jwt/jwt"
@@ -36,19 +35,16 @@ func (c *ShortlinkController) Prepare() {
 		}
 
 		if user == nil {
-			log.Println("User is nil")
+			code = http.StatusUnauthorized
 			return
 		}
 
 		v := &models.Users{Username: user.Username}
 		o := orm.NewOrm()
 		if err := o.Read(v, "username"); err != nil {
-			log.Println(err)
+			parseUserId = v.Id
 			return
 		}
-
-		parseUserId = v.Id
-		fmt.Print(parseUserId)
 		if err != nil {
 			switch err.(*jwt.ValidationError).Errors {
 			case jwt.ValidationErrorExpired:
@@ -66,4 +62,7 @@ func (c *ShortlinkController) Prepare() {
 		c.Data["json"] = helper.JsonResponse(code, message)
 		c.ServeJSON()
 	}
+	c.Ctx.Output.SetStatus(code)
+	c.Data["json"] = helper.JsonResponse(code, message)
+	c.ServeJSON()
 }
