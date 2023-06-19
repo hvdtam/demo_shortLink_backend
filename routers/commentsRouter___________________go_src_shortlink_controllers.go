@@ -54,6 +54,15 @@ func init() {
 
 	beego.GlobalControllerRouter["shortlink/controllers:ShortlinkController"] = append(beego.GlobalControllerRouter["shortlink/controllers:ShortlinkController"],
 		beego.ControllerComments{
+			Method:           "GetManager",
+			Router:           "/:id",
+			AllowHTTPMethods: []string{"get"},
+			MethodParams:     param.Make(),
+			Filters:          nil,
+			Params:           nil})
+
+	beego.GlobalControllerRouter["shortlink/controllers:ShortlinkController"] = append(beego.GlobalControllerRouter["shortlink/controllers:ShortlinkController"],
+		beego.ControllerComments{
 			Method:           "Put",
 			Router:           "/:id",
 			AllowHTTPMethods: []string{"put"},

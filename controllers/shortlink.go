@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"shortlink/helper"
 	"shortlink/models"
@@ -23,6 +24,7 @@ func (c *ShortlinkController) URLMapping() {
 	c.Mapping("Post", c.Post)
 	c.Mapping("GetOne", c.GetOne)
 	c.Mapping("GetAll", c.GetAll)
+	c.Mapping("GetManager", c.GetManager)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
 }
@@ -44,7 +46,8 @@ func (c *ShortlinkController) Post() {
 			c.Ctx.Output.SetStatus(201)
 			c.Data["json"] = v
 		} else {
-			c.Data["json"] = err.Error()
+			c.Ctx.Output.SetStatus(http.StatusBadRequest)
+			c.Data["json"] = helper.JsonResponse(http.StatusBadRequest, err.Error())
 		}
 	} else {
 		c.Data["json"] = err.Error()
@@ -61,6 +64,7 @@ func (c *ShortlinkController) Post() {
 // @router /:id [get]
 func (c *ShortlinkController) GetOne() {
 	slug := c.Ctx.Input.Param(":id")
+	passwordParam := c.Ctx.Input.Param(":password")
 	v, err := models.GetShortlinkByAlias(slug)
 	if err != nil {
 		c.Ctx.Output.SetStatus(http.StatusNotFound)
@@ -75,22 +79,25 @@ func (c *ShortlinkController) GetOne() {
 			c.Data["json"] = helper.JsonResponse(http.StatusGone, "Shortlink expired")
 		} else {
 			o := orm.NewOrm()
-			v.TotalClick = v.TotalClick + 1
 			if _, err = o.Update(v, "total_click"); err != nil {
 
 			}
 			v.TotalClick = v.TotalClick + 1
 			if v.Password != "" {
 				c.Ctx.Output.SetStatus(http.StatusUnauthorized)
-				c.Data["json"] = map[string]interface{}{
-					"id":       v.Id,
-					"longUrl":  v.LongUrl,
-					"password": v.Password,
-					"aliasUrl": v.AliasUrl,
-					"status":   v.Status,
+				c.Data["json"] = helper.JsonResponse(http.StatusUnauthorized, "Shortlink is protected")
+				if errz := bcrypt.CompareHashAndPassword([]byte(v.Password), []byte(passwordParam)); errz == nil {
+					c.Ctx.Output.SetStatus(http.StatusOK)
+					c.Data["json"] = map[string]interface{}{
+						"id":       v.Id,
+						"longUrl":  v.LongUrl,
+						"aliasUrl": v.AliasUrl,
+						"status":   v.Status,
+					}
 				}
 			} else {
 				c.Ctx.Output.SetStatus(http.StatusOK)
+				v.TotalClick = v.TotalClick + 1
 				c.Data["json"] = map[string]interface{}{
 					"id":       v.Id,
 					"longUrl":  v.LongUrl,
@@ -98,7 +105,45 @@ func (c *ShortlinkController) GetOne() {
 					"status":   v.Status,
 				}
 			}
+		}
+	}
+	c.ServeJSON()
+}
 
+// GetManager ...
+// @Title Get One
+// @Description get Shortlink by id
+// @Param	id		path 	string	true		"The key for staticblock"
+// @Success 200 {object} models.Shortlink
+// @Failure 403 :id is empty
+// @router /:id [get]
+func (c *ShortlinkController) GetManager() {
+	slug := c.Ctx.Input.Param(":id")
+	v, err := models.GetShortlinkByAlias(slug)
+	if err != nil {
+		c.Ctx.Output.SetStatus(http.StatusNotFound)
+		c.Data["json"] = helper.JsonResponse(http.StatusNotFound, "Shortlink not found")
+	} else {
+		if v.CreatedBy != parseUserId {
+			c.Ctx.Output.SetStatus(http.StatusUnauthorized)
+			c.Data["json"] = helper.JsonResponse(http.StatusUnauthorized, "Unauthorized")
+		} else if v.Status == 0 {
+			c.Ctx.Output.SetStatus(http.StatusNotFound)
+			c.Data["json"] = helper.JsonResponse(http.StatusNotFound, "Shortlink is disabled")
+		} else if v.Expire > int(time.Now().Unix()) {
+			c.Ctx.Output.SetStatus(http.StatusGone)
+			c.Data["json"] = helper.JsonResponse(http.StatusGone, "Shortlink expired")
+		} else {
+			o := orm.NewOrm()
+			if _, err = o.Update(v, "total_click"); err != nil {
+			}
+			c.Ctx.Output.SetStatus(http.StatusOK)
+			c.Data["json"] = map[string]interface{}{
+				"id":       v.Id,
+				"longUrl":  v.LongUrl,
+				"aliasUrl": v.AliasUrl,
+				"status":   v.Status,
+			}
 		}
 	}
 	c.ServeJSON()
@@ -197,11 +242,13 @@ func (c *ShortlinkController) GetAll() {
 // @Failure 403 :id is not int
 // @router /:id [put]
 func (c *ShortlinkController) Put() {
-	idStr := c.Ctx.Input.Param(":id")
-	id, _ := strconv.Atoi(idStr)
-	v := models.Shortlink{Id: id}
+	aliasStr := c.Ctx.Input.Param(":id")
+	v := models.Shortlink{AliasUrl: aliasStr}
+	if v.CreatedBy != parseUserId {
+		c.Data["json"] = helper.JsonResponse(http.StatusForbidden, "Forbidden")
+	}
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := models.UpdateShortlinkById(&v); err == nil {
+		if err := models.UpdateShortlinkByAlias(&v); err == nil {
 			c.Data["json"] = "OK"
 		} else {
 			c.Data["json"] = err.Error()

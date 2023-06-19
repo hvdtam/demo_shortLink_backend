@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 	"github.com/golang-jwt/jwt"
@@ -20,12 +21,16 @@ type BaseController struct {
 
 func (c *ShortlinkController) Prepare() {
 	var code int
+	fmt.Print(parseUserId)
 
 	code = http.StatusOK
 	message := "Invalid Token"
 	token := c.Ctx.Request.Header["Authorization"]
 	if len(token) == 0 {
 		code = http.StatusOK
+		parseUserId = 0
+		fmt.Print("invalid token")
+		fmt.Println(parseUserId)
 	} else {
 
 		user, err := helper.ParseToken(strings.TrimPrefix(token[0], "Bearer "))

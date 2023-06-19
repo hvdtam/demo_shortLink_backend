@@ -24,6 +24,7 @@ type Shortlink struct {
 	TotalClick   int    `orm:"column(total_click);null" json:"totalClick"`
 	CreatedAt    int    `orm:"column(created_at);null" json:"createdAt"`
 	CreatedBy    int    `orm:"column(created_by);null" json:"createdBy"`
+	CreatedName  string `orm:"-" json:"createdName"`
 	UpdatedAt    int    `orm:"column(updated_at);null" json:"updatedAt"`
 	UpdatedBy    int    `orm:"column(updated_by);null" json:"-"`
 }
@@ -44,6 +45,8 @@ func AddShortlink(m *Shortlink) (id int64, err error) {
 		var aliasUrl = helper.GenerateRandom(10)
 		m.AliasUrl = aliasUrl
 		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/") + aliasUrl
+	} else {
+		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/") + m.AliasUrl
 	}
 	m.CreatedAt = int(time.Now().Unix())
 	if m.Expire != 0 {
@@ -55,6 +58,11 @@ func AddShortlink(m *Shortlink) (id int64, err error) {
 	}
 	m.Status = 10
 	id, err = o.Insert(m)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return 0, errors.New("Alias Link already exists")
+		}
+	}
 	return
 }
 
@@ -173,6 +181,36 @@ func UpdateShortlinkById(m *Shortlink) (err error) {
 	if err = o.Read(&v); err == nil {
 		var num int64
 		if num, err = o.Update(m); err == nil {
+			fmt.Println("Number of records updated in database:", num)
+		}
+	}
+	return
+}
+
+// UpdateShortlink updates Shortlink by Id and returns error if
+// the record to be updated doesn't exist
+func UpdateShortlinkByAlias(m *Shortlink) (err error) {
+	o := orm.NewOrm()
+	idShortlink := 0
+	passwordJson := m.Password
+
+	if err = o.Read(m, "alias_url"); err == nil {
+		idShortlink = m.Id
+	}
+	v := Shortlink{Id: idShortlink, AliasUrl: m.AliasUrl}
+	if m.AliasUrl == "" {
+		var aliasUrl = helper.GenerateRandom(10)
+		m.AliasUrl = aliasUrl
+		m.FullAliasUrl = beego.AppConfig.DefaultString("urlShorten", "http://localhost:3000/s/shortlink/") + aliasUrl
+	}
+	if passwordJson != "" {
+		passwordHash, _ := bcrypt.GenerateFromPassword([]byte(passwordJson), bcrypt.DefaultCost)
+		m.Password = string(passwordHash)
+	}
+	// ascertain id exists in the database
+	if err = o.Read(&v, "alias_url"); err == nil {
+		var num int64
+		if num, err = o.Update(m, "alias_url", "password"); err == nil {
 			fmt.Println("Number of records updated in database:", num)
 		}
 	}
