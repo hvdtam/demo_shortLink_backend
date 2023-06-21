@@ -44,8 +44,9 @@ func init() {
 	}
 	orm.RegisterModel(new(Users))
 	orm.RegisterDriver("postgres", orm.DRPostgres)
-	orm.RegisterDataBase("default", "postgres", fmt.Sprintf("postgres://%s:@%s:%s/%s?sslmode=%s",
+	orm.RegisterDataBase("default", "postgres", fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		beego.AppConfig.DefaultString("dbuser", "vandinhtamhuynh"),
+		beego.AppConfig.DefaultString("dbpassword", ""),
 		beego.AppConfig.DefaultString("dbhost", "127.0.0.1"),
 		beego.AppConfig.DefaultString("dbport", "5432"),
 		beego.AppConfig.DefaultString("dbname", "shortlink"),
