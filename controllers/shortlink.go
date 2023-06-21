@@ -226,7 +226,7 @@ func (c *ShortlinkController) GetAll() {
 			c.Ctx.Output.SetStatus(http.StatusOK)
 			c.Data["json"] = l
 		} else {
-			c.Ctx.Output.SetStatus(http.StatusNoContent)
+			c.Ctx.Output.SetStatus(http.StatusOK)
 			c.Data["json"] = helper.JsonResponse(http.StatusNoContent, "No Content")
 		}
 	}
