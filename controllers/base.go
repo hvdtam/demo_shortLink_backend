@@ -21,7 +21,6 @@ type BaseController struct {
 
 func (c *ShortlinkController) Prepare() {
 	var code int
-	fmt.Print(parseUserId)
 
 	code = http.StatusOK
 	message := "Invalid Token"
